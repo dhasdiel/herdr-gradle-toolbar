@@ -41,6 +41,16 @@ title = "Gradle: generateMavlink"
 command = ["sh", "gradle.sh", "generateMavlink"]
 
 [[actions]]
+id = "rerun"
+title = "Gradle: rerun last task"
+command = ["sh", "gradle.sh", "--rerun"]
+
+[[actions]]
+id = "stop"
+title = "Gradle: stop task"
+command = ["sh", "gradle.sh", "--stop"]
+
+[[actions]]
 id = "tasks"
 title = "Gradle: pick task…"
 command = ["sh", "gradle.sh", "--open-picker"]
