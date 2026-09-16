@@ -8,37 +8,31 @@ platforms = ["linux", "macos"]
 [[actions]]
 id = "build"
 title = "Gradle: build"
-contexts = ["workspace"]
 command = ["sh", "gradle.sh", "build"]
 
 [[actions]]
 id = "test"
 title = "Gradle: allTests"
-contexts = ["workspace"]
 command = ["sh", "gradle.sh", "allTests"]
 
 [[actions]]
 id = "check"
 title = "Gradle: check"
-contexts = ["workspace"]
 command = ["sh", "gradle.sh", "check"]
 
 [[actions]]
 id = "clean"
 title = "Gradle: clean"
-contexts = ["workspace"]
 command = ["sh", "gradle.sh", "clean"]
 
 [[actions]]
 id = "assemble-debug"
 title = "Gradle: assembleDebug"
-contexts = ["workspace"]
 command = ["sh", "gradle.sh", "assembleDebug"]
 
 [[actions]]
 id = "tasks"
 title = "Gradle: pick task…"
-contexts = ["workspace"]
 command = ["sh", "gradle.sh", "--open-picker"]
 
 [[panes]]
