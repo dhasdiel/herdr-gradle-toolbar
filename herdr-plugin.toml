@@ -1,0 +1,50 @@
+id = "kmp.gradle-toolbar"
+name = "Gradle Toolbar"
+version = "0.1.0"
+min_herdr_version = "0.8.0"
+description = "IntelliJ-style buttons for Gradle tasks in Kotlin Multiplatform projects. Requires python3 and a gradlew-based project."
+platforms = ["linux", "macos"]
+
+[[actions]]
+id = "build"
+title = "Gradle: build"
+contexts = ["workspace"]
+command = ["sh", "gradle.sh", "build"]
+
+[[actions]]
+id = "test"
+title = "Gradle: allTests"
+contexts = ["workspace"]
+command = ["sh", "gradle.sh", "allTests"]
+
+[[actions]]
+id = "check"
+title = "Gradle: check"
+contexts = ["workspace"]
+command = ["sh", "gradle.sh", "check"]
+
+[[actions]]
+id = "clean"
+title = "Gradle: clean"
+contexts = ["workspace"]
+command = ["sh", "gradle.sh", "clean"]
+
+[[actions]]
+id = "assemble-debug"
+title = "Gradle: assembleDebug"
+contexts = ["workspace"]
+command = ["sh", "gradle.sh", "assembleDebug"]
+
+[[actions]]
+id = "tasks"
+title = "Gradle: pick task…"
+contexts = ["workspace"]
+command = ["sh", "gradle.sh", "--open-picker"]
+
+[[panes]]
+id = "tasks"
+title = "Gradle tasks"
+placement = "popup"
+width = "60%"
+height = 24
+command = ["sh", "gradle.sh", "--pick"]
