@@ -55,6 +55,16 @@ id = "tasks"
 title = "Gradle: pick task…"
 command = ["sh", "gradle.sh", "--open-picker"]
 
+[[actions]]
+id = "dashboard"
+title = "Gradle: button bar"
+command = ["sh", "gradle.sh", "--open-dashboard"]
+
+[[actions]]
+id = "link"
+title = "Gradle: link (internal)"
+command = ["sh", "gradle.sh", "--link"]
+
 [[panes]]
 id = "tasks"
 title = "Gradle tasks"
@@ -62,3 +72,15 @@ placement = "popup"
 width = "60%"
 height = 24
 command = ["sh", "gradle.sh", "--pick"]
+
+[[panes]]
+id = "dashboard"
+title = "Gradle"
+placement = "split"
+command = ["sh", "gradle.sh", "--dashboard"]
+
+[[link_handlers]]
+id = "run-task"
+title = "Run gradle task"
+pattern = "^https://gradle\\.local/"
+action = "link"

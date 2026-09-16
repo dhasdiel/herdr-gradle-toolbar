@@ -39,6 +39,9 @@ find_root() {
 
 shell_quote() { printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"; }
 
+urlenc() { python3 -c 'import sys, urllib.parse; print(urllib.parse.quote(sys.stdin.read().strip(), safe=""))'; }
+urldec() { python3 -c 'import sys, urllib.parse; print(urllib.parse.unquote(sys.stdin.read().strip()))'; }
+
 # pane_busy <pane_id>: true when the pane is not at an interactive prompt.
 pane_busy() {
   [ "$("$HERDR" pane get "$1" 2>/dev/null | jf result.pane.interactive_ready)" = "false" ]
@@ -69,9 +72,7 @@ output_pane() {
 }
 
 run_task() {
-  cwd="$(ctx focused_pane_cwd)"
-  [ -n "$cwd" ] || cwd="$(ctx workspace_cwd)"
-  [ -n "$cwd" ] || cwd="$PWD"
+  cwd="$(run_cwd)"
   root="$(find_root "$cwd")" || {
     echo "gradlew not found in $cwd or any parent — is this a Gradle project?" >&2
     return 1
@@ -86,6 +87,45 @@ run_task() {
   ok="$hb pane rename $out $(shell_quote "$label ✓") >/dev/null 2>&1; $hb notification show Gradle --body $(shell_quote "$* finished") --sound done >/dev/null 2>&1"
   bad="$hb pane rename $out $(shell_quote "$label ✗") >/dev/null 2>&1; $hb notification show Gradle --body $(shell_quote "$* failed") --sound request >/dev/null 2>&1"
   "$HERDR" pane run "$out" "cd $(shell_quote "$root") && ./gradlew $* && { $ok; } || { $bad; }"
+}
+
+# run_cwd: which directory the task should resolve from.
+# GRADLE_RUN_CWD overrides (set by --link, which clicks from the dashboard pane).
+run_cwd() {
+  [ -n "${GRADLE_RUN_CWD:-}" ] && { printf '%s' "$GRADLE_RUN_CWD"; return; }
+  c="$(ctx focused_pane_cwd)"; [ -n "$c" ] || c="$(ctx workspace_cwd)"; [ -n "$c" ] || c="$PWD"
+  printf '%s' "$c"
+}
+
+# dashboard: clickable button bar. Prints tasks.txt as OSC8 links, then drops
+# to a shell so the pane stays open. ctrl+click -> link handler -> --link.
+dashboard() {
+  c="$(ctx focused_pane_cwd)"; [ -n "$c" ] || c="$(ctx workspace_cwd)"
+  # remember where the user was when the bar opened — --link needs it
+  [ -n "$c" ] && { mkdir -p "$(state_dir)"; printf '%s' "$c" > "$(state_dir)/dash-cwd"; }
+  cfg="$(task_file)"
+  [ -f "$cfg" ] || { mkdir -p "$(dirname "$cfg")"; write_default_tasks > "$cfg"; }
+  printf '\n  GRADLE\n'
+  while IFS= read -r l; do
+    case "$l" in '' | '#'*) continue ;; esac
+    case "$l" in *\|*) label="${l%%|*}"; args="${l#*|}" ;; *) label="$l"; args="$l" ;; esac
+    enc="$(printf '%s' "$args" | urlenc)"
+    printf '  \033]8;;https://gradle.local/%s\033\\[ %s ]\033]8;;\033\\\n' "$enc" "$label"
+  done < "$cfg"
+  printf '\n  ctrl+click a task to run it\n\n'
+  exec "${SHELL:-/bin/sh}" -l
+}
+
+# link: invoked by the link handler when a dashboard button is ctrl+clicked.
+link() {
+  url="${HERDR_PLUGIN_CLICKED_URL:-$(ctx clicked_url)}"
+  args="$(printf '%s' "${url#https://gradle.local/}" | urldec)"
+  [ -n "$args" ] || { echo "empty task in $url" >&2; return 1; }
+  [ -f "$(state_dir)/dash-cwd" ] && GRADLE_RUN_CWD="$(cat "$(state_dir)/dash-cwd")"
+  [ -n "${GRADLE_RUN_CWD:-}" ] || GRADLE_RUN_CWD="$(ctx workspace_cwd)"
+  export GRADLE_RUN_CWD
+  # intentional word splitting
+  run_task $args
 }
 
 rerun() {
@@ -158,6 +198,7 @@ selfcheck() {
   t="$(mktemp -d)"; mkdir -p "$t/p/sub"; : > "$t/p/gradlew"
   [ "$(find_root "$t/p/sub")" = "$t/p" ] || { echo "FAIL find_root"; fail=1; }
   [ "$(shell_quote "a b'c")" = "'a b'\''c'" ] || { echo "FAIL shell_quote"; fail=1; }
+  [ "$(printf 'test --rerun-tasks' | urlenc | urldec)" = "test --rerun-tasks" ] || { echo "FAIL url roundtrip"; fail=1; }
   echo "x|y" > "$t/p/.herdr-gradle-tasks"
   got="$(HERDR_PLUGIN_CONTEXT_JSON="{\"focused_pane_cwd\":\"$t/p/sub\"}" HERDR_PLUGIN_CONFIG_DIR=/nonexistent task_file)"
   [ "$got" = "$t/p/.herdr-gradle-tasks" ] || { echo "FAIL task_file project: $got"; fail=1; }
@@ -171,9 +212,12 @@ selfcheck() {
 case "${1:-}" in
   --pick) pick ;;
   --open-picker) exec "$HERDR" plugin pane open --plugin "${HERDR_PLUGIN_ID:?}" --entrypoint tasks ;;
+  --dashboard) dashboard ;;
+  --open-dashboard) exec "$HERDR" plugin pane open --plugin "${HERDR_PLUGIN_ID:?}" --entrypoint dashboard ;;
+  --link) link ;;
   --rerun) rerun ;;
   --stop) stop ;;
   --selfcheck) selfcheck ;;
-  "") echo "usage: gradle.sh <task args...> | --pick | --open-picker | --selfcheck" >&2; exit 2 ;;
+  "") echo "usage: gradle.sh <task args...> | --pick | --open-picker | --open-dashboard | --link | --rerun | --stop | --selfcheck" >&2; exit 2 ;;
   *) run_task "$@" ;;
 esac
