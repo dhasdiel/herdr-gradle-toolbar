@@ -128,6 +128,15 @@ link() {
   run_task $args
 }
 
+# auto_dashboard: workspace.created hook — open the button bar when the new
+# workspace is focused and looks like a gradle project.
+auto_dashboard() {
+  [ "$(printf '%s' "${HERDR_PLUGIN_EVENT_JSON:-{}}" | jf workspace.focused)" = "true" ] || return 0
+  c="$(ctx workspace_cwd)"; [ -n "$c" ] || return 0
+  find_root "$c" >/dev/null 2>&1 || return 0
+  exec "$HERDR" plugin pane open --plugin "${HERDR_PLUGIN_ID:?}" --entrypoint dashboard
+}
+
 rerun() {
   f="$(state_dir)/last-task"
   [ -f "$f" ] || { echo "no previous task to rerun" >&2; return 1; }
@@ -215,6 +224,7 @@ case "${1:-}" in
   --dashboard) dashboard ;;
   --open-dashboard) exec "$HERDR" plugin pane open --plugin "${HERDR_PLUGIN_ID:?}" --entrypoint dashboard ;;
   --link) link ;;
+  --auto-dashboard) auto_dashboard ;;
   --rerun) rerun ;;
   --stop) stop ;;
   --selfcheck) selfcheck ;;

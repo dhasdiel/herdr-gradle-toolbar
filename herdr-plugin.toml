@@ -79,6 +79,10 @@ title = "Gradle"
 placement = "split"
 command = ["sh", "gradle.sh", "--dashboard"]
 
+[[events]]
+on = "workspace.created"
+command = ["sh", "gradle.sh", "--auto-dashboard"]
+
 [[link_handlers]]
 id = "run-task"
 title = "Run gradle task"
