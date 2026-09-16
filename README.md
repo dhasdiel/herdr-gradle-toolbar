@@ -21,6 +21,8 @@ Requires `python3` and a `gradlew`-based project. Works on macOS and Linux.
 | `kmp.gradle-toolbar.check` | `./gradlew check` |
 | `kmp.gradle-toolbar.clean` | `./gradlew clean` |
 | `kmp.gradle-toolbar.assemble-debug` | `./gradlew assembleDebug` |
+| `kmp.gradle-toolbar.run-jvm` | `./gradlew run` (Compose Desktop) |
+| `kmp.gradle-toolbar.generate-mavlink` | `./gradlew generateMavlink` |
 | `kmp.gradle-toolbar.tasks` | opens the task picker popup |
 
 ## Customize tasks

@@ -31,6 +31,16 @@ title = "Gradle: assembleDebug"
 command = ["sh", "gradle.sh", "assembleDebug"]
 
 [[actions]]
+id = "run-jvm"
+title = "Gradle: run (JVM)"
+command = ["sh", "gradle.sh", "run"]
+
+[[actions]]
+id = "generate-mavlink"
+title = "Gradle: generateMavlink"
+command = ["sh", "gradle.sh", "generateMavlink"]
+
+[[actions]]
 id = "tasks"
 title = "Gradle: pick task…"
 command = ["sh", "gradle.sh", "--open-picker"]

@@ -76,6 +76,8 @@ write_default_tasks() {
 # Label is optional — a bare line is used as the args.
 Build|build
 Clean|clean
+Run (JVM)|run
+Generate MAVLink|generateMavlink
 All tests|allTests
 Check|check
 Assemble debug APK|assembleDebug
