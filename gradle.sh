@@ -46,6 +46,7 @@ pane_busy() {
 
 # output_pane <cwd>: reuse the stored output pane or split a new one.
 output_pane() {
+  mkdir -p "$(state_dir)"
   store="$(state_dir)/gradle-pane"
   out=""
   if [ -f "$store" ]; then
@@ -76,6 +77,7 @@ run_task() {
     return 1
   }
   out="$(output_pane "$root")" || return 1
+  mkdir -p "$(state_dir)"
   printf '%s' "$*" > "$(state_dir)/last-task"
   label="gradle: $*"
   "$HERDR" pane rename "$out" "$label" >/dev/null 2>&1
